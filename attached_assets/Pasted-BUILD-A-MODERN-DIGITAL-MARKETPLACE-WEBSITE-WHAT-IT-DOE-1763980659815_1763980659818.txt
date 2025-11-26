@@ -1,0 +1,294 @@
+BUILD A MODERN DIGITAL MARKETPLACE WEBSITE
+
+═══════════════════════════════════════
+
+WHAT IT DOES:
+Sell digital accounts (gaming, streaming, VPN, etc.), combo lists, and offer custom development services (web dev, Python scripts, Telegram bots). Customers buy products, pay online, and access their purchases in their personal dashboard. NO EMAIL DELIVERY - everything accessed through user panel.
+
+═══════════════════════════════════════
+
+TECH STACK:
+
+Next.js + TypeScript + App Router
+Tailwind CSS + shadcn/ui components
+Framer Motion (animations)
+SQLite + Prisma ORM
+NextAuth.js (authentication)
+Stripe (placeholder for now - will integrate real payments later)
+═══════════════════════════════════════
+
+DESIGN REQUIREMENTS:
+
+📱 MOBILE-FIRST:
+
+Design for mobile (320px+) first, then scale up
+Touch-optimized (44px+ buttons)
+Bottom nav on mobile
+Swipeable carousels
+Hamburger menu
+Responsive on all devices
+✨ MODERN LOOK:
+
+Glassmorphism UI + purple/blue gradients
+Dark mode (default)
+Smooth animations (page transitions, hover effects)
+Skeleton loaders
+Premium aesthetic
+⚡ FAST PERFORMANCE:
+
+Next.js image optimization
+Lazy loading
+SSR for SEO
+Optimized for slow networks
+═══════════════════════════════════════
+
+PAGES TO BUILD:
+
+CUSTOMER SIDE:
+
+HOMEPAGE
+Hero section (animated gradient, value prop)
+Featured products carousel
+Service categories grid
+Search bar
+Recent sales feed
+Testimonials
+STORE (Accounts & Combo Lists)
+Product grid (1 col mobile, 3-4 desktop)
+Product cards: image, name, price, stock badge
+Filters: category, price range, stock status
+Search with live results
+Sort options
+Pagination
+PRODUCT DETAIL
+Large product image
+Name, price, stock status
+Description
+Quantity selector
+"Add to Cart" + "Buy Now" buttons
+Related products
+SERVICES
+3 service cards: Website Dev, Python Scripts, Telegram Bots
+Pricing/features for each
+"Request Quote" modal forms
+CART
+Slide-out mini cart
+Full cart page
+Item list with thumbnails
+Quantity controls
+Coupon code input
+Total calculation
+"Proceed to Checkout"
+CHECKOUT (PLACEHOLDER PAYMENTS)
+Step 1: Review order
+Step 2: Customer info (email, name) - ACCOUNT REQUIRED (no guest checkout)
+Step 3: Payment method selection (show options but use test mode)
+Step 4: "Complete Test Order" button (simulates payment, creates order)
+Step 5: Order confirmation:
+Order number
+Success message: "Go to your dashboard to access your purchases"
+Big button: "View in Dashboard" → redirects to user dashboard
+NO credentials shown here, NO email delivery
+Make payment code MODULAR with // TODO comments so real gateways can be added later.
+
+USER DASHBOARD ⭐ MAIN ACCESS POINT (Login Required)
+This is where users access EVERYTHING they bought.
+
+TABS:
+
+A. MY PURCHASES (Default Tab):
+
+Card/table view of all purchased products
+Each purchase shows:
+Product image (thumbnail)
+Product name
+Purchase date
+Order number
+Status (Completed/Pending)
+"View Details" button
+B. PURCHASE DETAILS (Modal or Page):
+When user clicks "View Details":
+
+Product image (large)
+Product name
+Purchase date
+Order ID
+For Accounts:
+
+Username: [show/copy button]
+Password: [show/copy button]
+Click to reveal credentials (security)
+Copy to clipboard buttons
+For Combo Lists:
+
+Download button (secure download link)
+
+File name, file size
+
+Download count (how many times downloaded)
+
+Note: "Keep this information secure"
+
+C. ORDER HISTORY:
+
+Complete list of all orders
+Table with:
+Order number
+Date
+Total items
+Total paid
+Status
+Click order → see all items in that order
+Invoice download (PDF)
+D. SUPPORT TICKETS:
+
+Create new ticket button
+Ticket list (ID, subject, status, date)
+View/reply to tickets
+E. PROFILE SETTINGS:
+
+Update name, email
+Change password
+Delete account
+IMPORTANT:
+
+Users MUST be logged in to purchase (no guest checkout)
+After payment, redirect to dashboard automatically
+Dashboard is the ONLY place to access purchased credentials/files
+Add security: require password confirmation to view credentials (optional)
+AUTH PAGES
+Login (email/password, social login)
+Register (required before checkout)
+Password reset
+CONTACT/SUPPORT
+Contact form
+FAQ accordion
+═══════════════════════════════════════
+
+ADMIN PANEL (/admin - Admin Only):
+
+LAYOUT:
+
+Sidebar navigation (collapsible)
+Dark mode toggle
+Mobile responsive
+PAGES:
+
+DASHBOARD
+Stats cards: Revenue, Orders, Users, Products Sold
+Revenue chart (daily/weekly/monthly)
+Recent orders table
+Top products list
+PRODUCTS MANAGEMENT ⭐ MAIN FEATURE
+Table: thumbnail, name, category, price, stock, status, actions
+Add New Product form:
+Type (Account/Combo)
+Name, category, description (rich text)
+Price, stock
+IMAGE UPLOAD (drag & drop, preview, auto-optimize)
+Credentials (encrypted) or file upload
+Featured toggle, status toggle
+Edit product (pre-filled form)
+Delete (with confirmation)
+Bulk actions (delete, activate, deactivate)
+Search, filters, pagination
+ORDERS
+Table: Order ID, customer, date, items (thumbnails), total, status, actions
+Order details modal showing:
+Customer info
+Items purchased
+Which credentials were delivered
+Payment info
+Update order status
+When status set to "Completed", product credentials become visible in user's dashboard
+Refund option (placeholder)
+Export to CSV
+SERVICE REQUESTS
+Table: Customer, service type, date, status
+View details modal
+Respond with quote
+Mark as completed
+USERS
+Table: Name, email, role, join date, total spent, total purchases
+View what user has purchased (access history)
+Edit role (User/Admin)
+Ban/Unban users
+View user orders
+SUPPORT TICKETS
+Table: Ticket ID, user, subject, status, priority
+View conversation thread
+Reply (sends notification email, but user must login to dashboard to read reply)
+Close/reopen tickets
+SETTINGS
+Site settings (name, logo, email, currency)
+Payment settings (API keys - placeholder)
+Email settings (SMTP config - only for notifications, NOT credential delivery)
+Homepage settings (featured products, banner)
+Categories management
+═══════════════════════════════════════
+
+DATABASE (Prisma Models):
+
+User (id, name, email, password, role, createdAt)
+Product (id, name, type, category, description, price, stock, image, credentials, fileUrl, status, featured)
+Order (id, userId, total, status, paymentMethod, transactionId, createdAt)
+OrderItem (id, orderId, productId, quantity, price, deliveredCredentials [JSON])
+ServiceRequest (id, name, email, serviceType, description, budget, status)
+SupportTicket (id, userId, subject, status, priority)
+TicketMessage (id, ticketId, message, isAdminReply)
+Coupon (code, discountType, discountValue, expiryDate)
+Category (id, name, slug)
+When order is completed:
+
+Copy product credentials to OrderItem.deliveredCredentials (so user always has access even if you delete the original product)
+═══════════════════════════════════════
+
+KEY FEATURES:
+
+✅ User authentication (NextAuth) - REQUIRED for purchases
+✅ Role-based access (User/Admin)
+✅ Image upload system (optimize, thumbnails, store in /public/uploads)
+✅ File upload for combo lists (secure storage)
+✅ Encrypted credential storage
+✅ Email notifications ONLY for:
+
+Order confirmation ("Your order is complete, login to dashboard to access")
+Password reset
+Support ticket replies notification
+NOT for delivering credentials
+✅ Coupon code system
+✅ Search & filtering
+✅ Toast notifications
+✅ Form validation
+✅ Confirmation modals for delete actions
+✅ Copy to clipboard for credentials
+✅ Secure download links (expire after time or download count)
+✅ Loading states everywhere
+✅ Empty states with illustrations
+✅ Breadcrumb navigation
+✅ Mobile bottom nav
+✅ PWA-ready
+✅ SEO optimized
+═══════════════════════════════════════
+
+SPECIAL INSTRUCTIONS:
+
+Build MOBILE-FIRST (design for phones first)
+NO guest checkout - users must register/login to buy
+ALL purchased products accessible ONLY in user dashboard
+NO email delivery of credentials - only notification emails
+Make payment system PLACEHOLDER (test mode that creates real orders, but mark with TODO comments for later integration)
+Add image upload with drag-drop for products
+Encrypt account credentials in database
+When order completed, copy credentials to OrderItem so user always has access
+Add "Copy to clipboard" buttons for credentials
+Secure file downloads (unique tokens, expiration)
+Make all code MODULAR and well-commented
+Use shadcn/ui components for consistency
+Add smooth animations with Framer Motion
+Optimize all images automatically
+Make it production-ready
+DELIVERY FLOW:
+Purchase → Payment → Order Created (Status: Completed) → User Dashboard → My Purchases → View Details → Access Credentials/Download Files
+
+Build a complete, modern, fast, and beautiful digital marketplace with dashboard-based product delivery.

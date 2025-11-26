@@ -1,0 +1,973 @@
+# BUILD A MODERN DIGITAL MARKETPLACE WEBSITE
+
+═══════════════════════════════════════
+
+## WHAT IT DOES:
+Sell digital accounts (gaming, streaming, VPN, etc.), combo lists, and offer custom development services (web dev, Python scripts, Telegram bots). Customers buy products, pay online via **PayPal, GCash, or Binance**, and access their purchases in their personal dashboard. NO EMAIL DELIVERY - everything accessed through user panel.
+
+═══════════════════════════════════════
+
+## TECH STACK:
+- Next.js + TypeScript + App Router
+- Tailwind CSS + shadcn/ui components
+- Framer Motion (animations)
+- SQLite + Prisma ORM
+- NextAuth.js (authentication)
+- **Payment Gateways (SANDBOX/TEST MODE):**
+  - **PayPal SDK** - @paypal/checkout-server-sdk (sandbox)
+  - **GCash (Paymongo)** - paymongo-node (test mode)
+  - **Binance Pay** - binance-pay-sdk (test mode)
+
+═══════════════════════════════════════
+
+## DESIGN REQUIREMENTS:
+
+### 📱 MOBILE-FIRST:
+- Design for mobile (320px+) first, then scale up
+- Touch-optimized (44px+ buttons)
+- Bottom nav on mobile
+- Swipeable carousels
+- Hamburger menu
+- Responsive on all devices
+
+### ✨ MODERN LOOK:
+- Glassmorphism UI + purple/blue gradients
+- Dark mode (default)
+- Smooth animations (page transitions, hover effects)
+- Skeleton loaders
+- Premium aesthetic
+
+### ⚡ FAST PERFORMANCE:
+- Next.js image optimization
+- Lazy loading
+- SSR for SEO
+- Optimized for slow networks
+
+═══════════════════════════════════════
+
+## PAGES TO BUILD:
+
+### CUSTOMER SIDE:
+
+#### 1. HOMEPAGE
+- Hero section (animated gradient, value prop)
+- Featured products carousel
+- Service categories grid
+- Search bar
+- Recent sales feed (show payment method icons)
+- Testimonials
+- Payment methods badges (PayPal, GCash, Binance logos)
+
+#### 2. STORE (Accounts & Combo Lists)
+- Product grid (1 col mobile, 3-4 desktop)
+- Product cards: image, name, price, stock badge
+- Filters: category, price range, stock status
+- Search with live results
+- Sort options
+- Pagination
+
+#### 3. PRODUCT DETAIL
+- Large product image
+- Name, price, stock status
+- Description
+- Quantity selector
+- "Add to Cart" + "Buy Now" buttons
+- Related products
+- Accepted payment methods icons
+
+#### 4. SERVICES
+- 3 service cards: Website Dev, Python Scripts, Telegram Bots
+- Pricing/features for each
+- "Request Quote" modal forms
+
+#### 5. CART
+- Slide-out mini cart
+- Full cart page
+- Item list with thumbnails
+- Quantity controls
+- Coupon code input
+- Total calculation (show in PHP/USD)
+- "Proceed to Checkout"
+
+#### 6. CHECKOUT ⭐ **MULTI-PAYMENT GATEWAY**
+
+**ACCOUNT REQUIRED** (no guest checkout)
+
+**STEP 1: Review Order**
+- Order summary with thumbnails
+- Subtotal, discount, total
+- Currency selector (PHP for GCash, USD for PayPal/Binance)
+
+**STEP 2: Customer Info**
+- Auto-fill from logged-in user
+- Email, name (editable)
+
+**STEP 3: Payment Method Selection**
+
+Show 3 cards with logos:
+
+**A. PayPal** (Most Popular badge)
+- Logo + "Pay with PayPal"
+- "Fast & Secure"
+- Click → Initialize PayPal SDK
+- Show PayPal buttons
+- On approval → create order in DB → redirect to success
+
+**B. GCash** (For Philippines)
+- Logo + "Pay with GCash"
+- "Scan QR or Pay via App"
+- Click → Create Paymongo payment link
+- Show QR code + "Open GCash App" button
+- Webhook listener for payment confirmation
+- On success → create order → redirect to success
+
+**C. Binance Pay** (Crypto badge)
+- Logo + "Pay with Cryptocurrency"
+- "USDT, BTC, ETH accepted"
+- Click → Create Binance Pay order
+- Show QR code + deeplink button
+- Poll for payment status
+- On success → create order → redirect to success
+
+**STEP 4: Payment Processing**
+- Loading state with spinner
+- "Processing your payment..."
+- Payment method logo animated
+- Security badges
+
+**STEP 5: Order Confirmation**
+- Success animation (checkmark)
+- Order number
+- Payment method used (show icon)
+- Transaction ID
+- Success message: "Payment successful! Your purchase is ready."
+- **Big button: "View in Dashboard" → redirects to user dashboard**
+- **NO credentials shown here, NO email delivery**
+- Order summary
+- "What's next?" section explaining dashboard access
+
+**Payment Integration Details:**
+
+```typescript
+// FILE: /lib/payments/paypal.ts
+// TODO: Replace sandbox credentials with production in .env
+// Use PayPal SDK to create order, capture payment
+// Sandbox: https://developer.paypal.com/dashboard/
+
+// FILE: /lib/payments/gcash.ts
+// TODO: Use Paymongo for GCash (test mode)
+// Create source → webhook → verify payment
+// Test key: pk_test_...
+
+// FILE: /lib/payments/binance.ts
+// TODO: Binance Pay API (test mode)
+// Create order → QR code → webhook verification
+// Test merchant ID: ...
+
+// FILE: /app/api/webhooks/paymongo/route.ts
+// Verify Paymongo webhook signatures
+// Update order status on payment confirmation
+
+// FILE: /app/api/webhooks/binance/route.ts
+// Verify Binance webhook
+// Update order status
+```
+
+**Modular Structure:**
+```typescript
+// /lib/payments/index.ts
+interface PaymentProvider {
+  createPayment(amount: number, currency: string): Promise<PaymentResponse>
+  verifyPayment(id: string): Promise<boolean>
+  refund(id: string): Promise<boolean>
+}
+
+// Easy to swap or add providers
+class PayPalProvider implements PaymentProvider { ... }
+class GCashProvider implements PaymentProvider { ... }
+class BinanceProvider implements PaymentProvider { ... }
+```
+
+#### 7. USER DASHBOARD ⭐ **MAIN ACCESS POINT** (Login Required)
+
+This is where users access EVERYTHING they bought.
+
+**TABS:**
+
+**A. MY PURCHASES** (Default Tab):
+- Card/table view of all purchased products
+- Each purchase shows:
+  * Product image (thumbnail)
+  * Product name
+  * Purchase date
+  * Payment method badge (PayPal/GCash/Binance icon)
+  * Order number
+  * Status (Completed/Pending/Processing)
+  * "View Details" button
+
+**B. PURCHASE DETAILS** (Modal or Page):
+When user clicks "View Details":
+- Product image (large)
+- Product name
+- Purchase date
+- Order ID
+- Payment method + Transaction ID
+
+**For Accounts:**
+- Username: [show/copy button]
+- Password: [show/copy button]
+- Click to reveal credentials (security)
+- Copy to clipboard buttons
+- Optional: Additional info (recovery email, etc.)
+
+**For Combo Lists:**
+- Download button (secure download link)
+- File name, file size
+- Download count (how many times downloaded)
+- Expiry notice if applicable
+
+- Note: "Keep this information secure"
+
+**C. ORDER HISTORY:**
+- Complete list of all orders
+- Table with:
+  * Order number
+  * Date
+  * Items (thumbnails)
+  * Payment method icon
+  * Total paid (with currency)
+  * Status
+- Click order → see all items in that order
+- Invoice download (PDF with payment details)
+
+**D. PAYMENT HISTORY:**
+- All transactions
+- Date, amount, payment method, status, transaction ID
+- Receipt download
+
+**E. SUPPORT TICKETS:**
+- Create new ticket button
+- Ticket list (ID, subject, status, date)
+- View/reply to tickets
+
+**F. PROFILE SETTINGS:**
+- Update name, email
+- Change password
+- Preferred payment method
+- Currency preference
+- Delete account
+
+**IMPORTANT:** 
+- Users MUST be logged in to purchase (no guest checkout)
+- After payment confirmation, redirect to dashboard automatically
+- Dashboard is the ONLY place to access purchased credentials/files
+- Add security: require password confirmation to view credentials
+- Show payment method used for each purchase
+
+#### 8. AUTH PAGES
+- Login (email/password, social login optional)
+- Register (required before checkout)
+- Password reset
+
+#### 9. CONTACT/SUPPORT
+- Contact form
+- FAQ accordion (include payment FAQs)
+
+═══════════════════════════════════════
+
+## ADMIN PANEL (/admin - Admin Only):
+
+**LAYOUT:**
+- Sidebar navigation (collapsible)
+- Dark mode toggle
+- Mobile responsive
+
+**PAGES:**
+
+#### 1. DASHBOARD
+- Stats cards: 
+  * Total Revenue (by currency: PHP/USD)
+  * Revenue by Payment Method (PayPal/GCash/Binance breakdown)
+  * Orders (total, pending, completed)
+  * Users
+  * Products Sold
+- Revenue chart (daily/weekly/monthly) with payment method filters
+- Recent orders table (show payment method icons)
+- Top products list
+- Payment gateway status indicators (connected/error)
+
+#### 2. PRODUCTS MANAGEMENT ⭐ **MAIN FEATURE**
+- Table: thumbnail, name, category, price, stock, status, actions
+- Add New Product form:
+  * Type (Account/Combo)
+  * Name, category, description (rich text)
+  * Price (support PHP/USD)
+  * Stock quantity
+  * **IMAGE UPLOAD** (drag & drop, preview, auto-optimize)
+  * **For Accounts:** Username/password fields (encrypted on save)
+  * **For Combo Lists:** File upload (secure storage)
+  * Featured toggle
+  * Status toggle (Active/Draft)
+- Edit product (pre-filled form)
+- Delete (with confirmation)
+- Bulk actions (delete, activate, deactivate)
+- Search, filters, pagination
+
+#### 3. ORDERS ⭐ **PAYMENT TRACKING**
+- Table columns: 
+  * Order ID
+  * Customer
+  * Date
+  * Items (thumbnails)
+  * Payment Method (icon + name)
+  * Transaction/Reference ID
+  * Total (with currency)
+  * Status
+  * Actions
+- Order details modal:
+  * Customer info
+  * Items purchased
+  * Credentials delivered (view what user sees)
+  * Payment details:
+    - Method
+    - Transaction ID
+    - Payment date/time
+    - Amount + currency
+    - Payment status
+  * Timeline (created → paid → completed)
+- Update order status
+- Refund option (calls payment provider refund API)
+- Resend credentials (marks as re-delivered)
+- Export to CSV (with payment data)
+- Filters: by payment method, status, date range
+
+#### 4. PAYMENTS MANAGEMENT 🆕
+- **Payment Overview:**
+  * Total processed by each gateway
+  * Success rate per gateway
+  * Failed transactions log
+  * Pending payments (especially for GCash/Binance)
+  
+- **Transactions Table:**
+  * All payment transactions
+  * Reference ID, order ID, customer, amount, currency, method, status, date
+  * Click → see full payment provider response (JSON)
+  
+- **Refunds:**
+  * Issue refunds through UI
+  * Refund history
+  * Partial refund support
+
+- **Webhooks Log:**
+  * All incoming webhooks (Paymongo, Binance)
+  * Payload inspection
+  * Status (processed/failed)
+  * Debugging tool
+
+#### 5. SERVICE REQUESTS
+- Table: Customer, service type, date, status
+- View details modal
+- Respond with quote (can send payment link)
+- Mark as completed
+
+#### 6. USERS
+- Table: Name, email, role, join date, total spent, total purchases
+- Total spent breakdown by payment method
+- View what user has purchased (access history)
+- View user's payment history
+- Edit role (User/Admin)
+- Ban/Unban users
+
+#### 7. SUPPORT TICKETS
+- Table: Ticket ID, user, subject, status, priority
+- View conversation thread
+- Reply (sends notification)
+- Close/reopen tickets
+- Tag payment issues
+
+#### 8. SETTINGS ⭐ **PAYMENT CONFIGURATION**
+
+**A. General Settings:**
+- Site name, logo, email
+- Default currency (PHP/USD)
+- Tax settings
+- Terms of service
+
+**B. Payment Settings:**
+
+**PayPal Configuration:**
+```
+- Environment (Sandbox/Production)
+- Client ID: [input field]
+- Client Secret: [input field]
+- Test Mode toggle
+- "Test Connection" button
+- Webhook URL (auto-generated): https://yoursite.com/api/webhooks/paypal
+```
+
+**GCash/Paymongo Configuration:**
+```
+- Environment (Test/Live)
+- Public Key: [input field]
+- Secret Key: [input field]
+- Test Mode toggle
+- "Test Connection" button
+- Webhook URL: https://yoursite.com/api/webhooks/paymongo
+- Webhook Secret: [input field]
+```
+
+**Binance Pay Configuration:**
+```
+- Environment (Test/Production)
+- API Key: [input field]
+- API Secret: [input field]
+- Merchant ID: [input field]
+- Test Mode toggle
+- "Test Connection" button
+- Webhook URL: https://yoursite.com/api/webhooks/binance
+```
+
+**Payment Methods Status:**
+- Enable/disable each payment method
+- Show status indicator (active/inactive/error)
+- Last successful transaction timestamp
+
+**C. Email Settings:**
+- SMTP configuration (for notifications only)
+- Email templates
+
+**D. Homepage Settings:**
+- Featured products
+- Banner images
+- Announcement bar
+
+**E. Categories:**
+- Add/edit/delete product categories
+
+═══════════════════════════════════════
+
+## DATABASE (Prisma Models):
+
+```prisma
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  currency      String    @default("USD") // Preferred currency
+  createdAt     DateTime  @default(now())
+  orders        Order[]
+  tickets       SupportTicket[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  type          ProductType
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  description   String
+  price         Float
+  currency      String    @default("USD")
+  stock         Int
+  image         String?
+  credentials   String?   // Encrypted JSON: {username, password, extra}
+  fileUrl       String?   // For combo lists
+  fileName      String?
+  fileSize      Int?
+  status        ProductStatus @default(ACTIVE)
+  featured      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  orderItems    OrderItem[]
+}
+
+enum ProductType {
+  ACCOUNT
+  COMBO
+}
+
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  OUT_OF_STOCK
+}
+
+model Order {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  total           Float
+  currency        String    // PHP, USD
+  status          OrderStatus @default(PENDING)
+  paymentMethod   PaymentMethod
+  paymentId       String?   // Transaction/Reference ID from payment provider
+  paymentDetails  String?   // JSON: full payment response
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+  items           OrderItem[]
+  payment         Payment?
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  PAYPAL
+  GCASH
+  BINANCE
+}
+
+model Payment {
+  id                String    @id @default(cuid())
+  orderId           String    @unique
+  order             Order     @relation(fields: [orderId], references: [id])
+  method            PaymentMethod
+  amount            Float
+  currency          String
+  transactionId     String    @unique // Provider's transaction ID
+  status            PaymentStatus
+  payerEmail        String?
+  payerName         String?
+  providerResponse  String?   // JSON: full response from payment gateway
+  refundedAmount    Float?
+  refundedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+model OrderItem {
+  id                    String    @id @default(cuid())
+  orderId               String
+  order                 Order     @relation(fields: [orderId], references: [id])
+  productId             String
+  product               Product   @relation(fields: [productId], references: [id])
+  quantity              Int
+  price                 Float
+  deliveredCredentials  String?   // JSON: copy of credentials at time of purchase
+  deliveredAt           DateTime?
+}
+
+model ServiceRequest {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  serviceType   String
+  description   String
+  budget        String?
+  status        String    @default("pending")
+  createdAt     DateTime  @default(now())
+}
+
+model SupportTicket {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  subject     String
+  status      String    @default("open")
+  priority    String    @default("normal")
+  createdAt   DateTime  @default(now())
+  messages    TicketMessage[]
+}
+
+model TicketMessage {
+  id            String    @id @default(cuid())
+  ticketId      String
+  ticket        SupportTicket @relation(fields: [ticketId], references: [id])
+  message       String
+  isAdminReply  Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+}
+
+model Coupon {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  discountType    String    // percentage, fixed
+  discountValue   Float
+  minPurchase     Float?
+  expiryDate      DateTime?
+  usageLimit      Int?
+  usageCount      Int       @default(0)
+  active          Boolean   @default(true)
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  products  Product[]
+}
+
+model PaymentConfig {
+  id        String    @id @default(cuid())
+  provider  String    @unique // paypal, gcash, binance
+  isActive  Boolean   @default(false)
+  isTestMode Boolean  @default(true)
+  config    String    // JSON: encrypted API keys, secrets
+  lastTest  DateTime?
+  updatedAt DateTime  @updatedAt
+}
+
+model WebhookLog {
+  id          String    @id @default(cuid())
+  provider    String    // paymongo, binance, paypal
+  event       String
+  payload     String    // JSON
+  processed   Boolean   @default(false)
+  error       String?
+  createdAt   DateTime  @default(now())
+}
+```
+
+═══════════════════════════════════════
+
+## KEY FEATURES:
+
+✅ User authentication (NextAuth) - REQUIRED for purchases  
+✅ Role-based access (User/Admin)  
+✅ **Multi-payment gateway integration:**
+  - **PayPal** (sandbox: personal.sandbox accounts)
+  - **GCash via Paymongo** (test mode: test card numbers)
+  - **Binance Pay** (test mode: testnet)
+✅ Payment webhook handlers for async payment confirmation  
+✅ Secure payment credential storage (encrypted in DB)  
+✅ Image upload system (optimize, thumbnails)  
+✅ File upload for combo lists (secure storage)  
+✅ Encrypted credential storage  
+✅ Email notifications ONLY for:
+   - Order confirmation ("Payment received, login to dashboard")
+   - Payment failed alerts
+   - Refund processed
+   - Support ticket replies
+   - NOT for delivering credentials  
+✅ Coupon code system  
+✅ Currency support (PHP/USD)  
+✅ Payment method selection UI  
+✅ QR code generation for GCash/Binance  
+✅ Real-time payment status checking  
+✅ Refund system (admin panel)  
+✅ Payment analytics dashboard  
+✅ Transaction logging  
+✅ Search & filtering  
+✅ Toast notifications  
+✅ Form validation  
+✅ Copy to clipboard for credentials  
+✅ Secure download links  
+✅ Loading states everywhere  
+✅ Mobile-first responsive design  
+✅ PWA-ready  
+✅ SEO optimized  
+
+═══════════════════════════════════════
+
+## SPECIAL INSTRUCTIONS:
+
+### 🔥 CRITICAL:
+
+1. **Build MOBILE-FIRST** (design for phones first, 320px+)
+
+2. **NO guest checkout** - users must register/login to buy
+
+3. **ALL purchased products accessible ONLY in user dashboard**
+
+4. **NO email delivery of credentials** - only notification emails
+
+5. **Payment Integration (TEST MODE):**
+
+   **PayPal Sandbox Setup:**
+   ```bash
+   # .env.local
+   PAYPAL_CLIENT_ID=your_sandbox_client_id
+   PAYPAL_CLIENT_SECRET=your_sandbox_secret
+   PAYPAL_MODE=sandbox
+   NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_sandbox_client_id
+   ```
+   - Use @paypal/checkout-server-sdk
+   - Test with sandbox.paypal.com accounts
+   - Implement PayPal buttons SDK on frontend
+   - Capture payment on backend
+   - Handle IPN/webhooks for async confirmation
+
+   **GCash (Paymongo) Test Setup:**
+   ```bash
+   # .env.local
+   PAYMONGO_PUBLIC_KEY=pk_test_...
+   PAYMONGO_SECRET_KEY=sk_test_...
+   PAYMONGO_WEBHOOK_SECRET=whsec_...
+   ```
+   - Use Paymongo SDK (GCash is a source in Paymongo)
+   - Create payment source → redirect to GCash
+   - Listen for webhook: `source.chargeable` → create charge
+   - Verify webhook signatures
+   - Test with: https://developers.paymongo.com/docs/testing
+
+   **Binance Pay Test Setup:**
+   ```bash
+   # .env.local
+   BINANCE_API_KEY=test_api_key
+   BINANCE_API_SECRET=test_api_secret
+   BINANCE_MERCHANT_ID=test_merchant
+   BINANCE_MODE=test
+   ```
+   - Use Binance Pay API (testnet)
+   - Create order → get QR code + deeplink
+   - Poll payment status OR use webhook
+   - Handle crypto currency conversion
+   - Test with: Binance Testnet
+
+6. **Payment Flow Implementation:**
+
+   ```typescript
+   // /lib/payments/factory.ts
+   export function getPaymentProvider(method: PaymentMethod) {
+     switch(method) {
+       case 'PAYPAL': return new PayPalProvider()
+       case 'GCASH': return new GCashProvider()
+       case 'BINANCE': return new BinanceProvider()
+     }
+   }
+
+   // /app/api/checkout/route.ts
+   const provider = getPaymentProvider(paymentMethod)
+   const payment = await provider.createPayment(total, currency)
+   
+   // /app/api/webhooks/[provider]/route.ts
+   // Verify webhook signature
+   // Update order status
+   // Copy credentials to OrderItem
+   // Send notification email
+   ```
+
+7. **When order completed:**
+   - Copy product credentials to `OrderItem.deliveredCredentials`
+   - User always has access even if original product deleted
+   - Log delivery in database
+
+8. **Add "Copy to clipboard" buttons** for credentials
+
+9. **Secure file downloads:**
+   - Generate signed URLs with expiration
+   - Track download count per user
+   - Limit downloads if needed
+
+10. **Make all code MODULAR:**
+    ```
+    /lib/payments/
+      ├── index.ts (interfaces)
+      ├── paypal.ts
+      ├── gcash.ts
+      ├── binance.ts
+      └── factory.ts
+    
+    /app/api/
+      ├── checkout/route.ts
+      ├── webhooks/
+          ├── paypal/route.ts
+          ├── paymongo/route.ts
+          └── binance/route.ts
+    ```
+
+11. **Use shadcn/ui components** for consistency
+
+12. **Animations with Framer Motion:**
+    - Page transitions
+    - Cart slide-in
+    - Payment success checkmark
+    - Loading spinners
+
+13. **Image optimization:**
+    - Next.js Image component
+    - WebP conversion
+    - Lazy loading
+    - Responsive sizes
+
+14. **Security:**
+    - Encrypt credentials with crypto module
+    - Verify all webhook signatures
+    - Rate limit payment endpoints
+    - CSRF protection
+    - SQL injection prevention (Prisma handles this)
+
+15. **Error Handling:**
+    - Payment failed → show error → suggest retry
+    - Insufficient stock → block checkout
+    - Payment timeout → cancel order
+    - Log all payment errors to admin dashboard
+
+16. **Testing Requirements:**
+    - Include test payment buttons in dev mode
+    - Admin panel: "Generate Test Order" button
+    - Mock payment success/failure
+    - Console logs for debugging webhooks
+
+17. **Comments & Documentation:**
+    ```typescript
+    // TODO: PRODUCTION - Replace sandbox credentials
+    // TODO: PRODUCTION - Enable webhook signature verification
+    // TODO: PRODUCTION - Add proper error logging (Sentry)
+    // TODO: PRODUCTION - Implement rate limiting
+    ```
+
+18. **Mobile Payment UX:**
+    - Large payment method buttons (60px+)
+    - Auto-detect currency based on location (optional)
+    - QR codes optimized for mobile scanning
+    - Deep links to open GCash/Binance apps
+    - Loading states during payment processing
+    - Clear success/failure messages
+
+═══════════════════════════════════════
+
+## DELIVERY FLOW:
+
+```
+User Registration/Login
+    ↓
+Browse Products
+    ↓
+Add to Cart
+    ↓
+Checkout (select payment method)
+    ↓
+┌─────────────┬──────────────┬───────────────┐
+│   PayPal    │    GCash     │   Binance     │
+│  (Sandbox)  │ (Paymongo)   │  (Testnet)    │
+└─────────────┴──────────────┴───────────────┘
+    ↓
+Payment Processing
+    ↓
+Webhook Received → Verify → Update Order
+    ↓
+Order Status: COMPLETED
+    ↓
+Copy Credentials to OrderItem
+    ↓
+Send Email: "Order complete! Login to dashboard"
+    ↓
+User Dashboard → My Purchases → View Details
+    ↓
+Access Credentials / Download Files
+```
+
+═══════════════════════════════════════
+
+## FOLDER STRUCTURE:
+
+```
+/app
+  /(auth)
+    /login
+    /register
+  /(customer)
+    /page.tsx (homepage)
+    /store
+    /product/[slug]
+    /cart
+    /checkout
+    /dashboard
+      /purchases
+      /orders
+      /payments
+      /tickets
+      /settings
+    /services
+    /contact
+  /(admin)
+    /admin
+      /dashboard
+      /products
+      /orders
+      /payments
+      /users
+      /tickets
+      /settings
+  /api
+    /auth/[...nextauth]
+    /checkout
+    /webhooks
+      /paypal
+      /paymongo
+      /binance
+
+/components
+  /ui (shadcn components)
+  /layout
+  /payment
+    /PayPalButton.tsx
+    /GCashQR.tsx
+    /BinanceQR.tsx
+  /dashboard
+  /admin
+
+/lib
+  /payments
+    /index.ts
+    /paypal.ts
+    /gcash.ts
+    /binance.ts
+    /factory.ts
+  /db.ts
+  /auth.ts
+  /crypto.ts (encryption)
+  /email.ts
+
+/prisma
+  /schema.prisma
+
+/public
+  /uploads
+    /products
+    /files
+```
+
+═══════════════════════════════════════
+
+## TESTING CREDENTIALS TO INCLUDE:
+
+Add a `/docs/TESTING.md` file with:
+
+```markdown
+# Payment Testing Guide
+
+## PayPal Sandbox
+- Buyer Account: sb-buyer@personal.example.com / password123
+- Test Card: 4032039403959724 (Visa)
+- Dashboard: https://sandbox.paypal.com
+
+## GCash (Paymongo Test)
+- Test Card: 4123450131001381
+- CVC: any 3 digits
+- Expiry: any future date
+- Test Sources: https://developers.paymongo.com/docs/testing-gcash
+
+## Binance Pay (Testnet)
+- Use Binance Testnet environment
+- Test wallet with test USDT
+- Merchant Dashboard: https://testnet.binance.com
+```
+
+═══════════════════════════════════════
+
+**Build a complete, production-ready digital marketplace with real payment gateway integration (test mode), mobile-first design, and dashboard-based product delivery. Make it fast, secure, and beautiful! 🚀**
+
+
+You can use React.
