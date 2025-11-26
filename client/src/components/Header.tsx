@@ -7,7 +7,6 @@ import { MiniCart } from './MiniCart';
 import { NotificationCenter } from './NotificationCenter';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import faviconUrl from '/favicon.svg';
 
 export function Header() {
   const { user } = useAuth();
