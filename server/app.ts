@@ -40,6 +40,9 @@ app.use(express.urlencoded({ extended: false }));
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB limit
 app.use(upload.single('file'));
 
+// Serve static files from public folder
+app.use(express.static('public'));
+
 // Initialize session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-key-change-in-production',
