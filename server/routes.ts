@@ -48,8 +48,10 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize Mega storage
-  await initializeMega();
+  // Initialize Mega storage (non-blocking - optional feature)
+  initializeMega().catch(() => {
+    // MEGA is optional, app works without it
+  });
 
   // ============================================================================
   // EMAIL/PASSWORD AUTH ROUTES
