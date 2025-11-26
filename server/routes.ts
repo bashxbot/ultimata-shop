@@ -1197,5 +1197,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // Self-ping to keep service alive on Render (prevents spin-down after 15 mins of inactivity)
+  if (process.env.NODE_ENV === 'production') {
+    const pingInterval = setInterval(async () => {
+      try {
+        const response = await fetch('http://localhost:10000/health');
+        if (response.ok) {
+          console.log(`[${new Date().toLocaleTimeString()}] Self-ping: Service is alive`);
+        }
+      } catch (error) {
+        // Silently fail - service will restart if needed
+      }
+    }, 10 * 60 * 1000); // Ping every 10 minutes
+
+    // Clear interval when server closes
+    httpServer.on('close', () => clearInterval(pingInterval));
+  }
+
   return httpServer;
 }
