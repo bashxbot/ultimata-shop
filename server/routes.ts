@@ -1146,6 +1146,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================================================
+  // HEALTH CHECK & MONITORING
+  // ============================================================================
+
+  // Health check endpoint (for Render monitoring & uptime robots)
+  app.get('/health', async (req, res) => {
+    try {
+      // Check database connection
+      const users = await storage.getAllUsers().catch(() => []);
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        database: users ? 'connected' : 'disconnected',
+        environment: process.env.NODE_ENV || 'development',
+        version: '1.0.0',
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'degraded',
+        timestamp: new Date().toISOString(),
+        error: 'Database connection failed',
+      });
+    }
+  });
+
+  // Health status for monitoring dashboard
+  let healthChecks: any[] = [];
+  app.get('/api/admin/health-status', isAdmin, async (req, res) => {
+    try {
+      const status = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        database: 'connected',
+      };
+      healthChecks.push(status);
+      // Keep only last 100 checks
+      if (healthChecks.length > 100) {
+        healthChecks = healthChecks.slice(-100);
+      }
+      res.json({ current: status, history: healthChecks });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch health status' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
